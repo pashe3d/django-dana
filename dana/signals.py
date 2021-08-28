@@ -4,34 +4,38 @@ from django.dispatch import receiver
 from purchase.models import Payment
 import requests
 
-token = ""
-
 
 # noinspection PyUnusedLocal
 @receiver(post_save, sender=Payment)
 def save_user_in_crm(sender, instance, **kwargs):
     user = instance.order.user
+    login_url = 'https://melkemun.danaabr.com/api/v1/Token/GetToken'
+    login_data = {'Username': 'imshoeibi@gmail.com', 'Password': '09152464454',
+                  'secret': 'A81FDE01084CB040B8085C600174CD391C603F2B'}
+    login_response = requests.post(login_url, json=login_data)
+    login_content = login_response.json()
+    token = login_content['ResultData']['access_token']
 
     if instance.type_id == Payment.Type.FREE:
         post_data = {
-            "Subject": "سرنخ نمونه: علاقه مند به خرید خودرو کوییک",
-            "FullName": "آقای مهندس پرویز علی بیگی",
-            "FullName_FirstName": "پرویز",
-            "FullName_LastName": "علی بیگی",
+            "Subject": "سرنخ: علاقه مند به خرید اشتراک",
+            "FullName": user.name,
+            "FullName_FirstName": "-",
+            "FullName_LastName": user.name,
             "FullName_NamePrefix": "33203127-ABB1-420D-9F3E-628D6A896C92",
             "TemplateAttributeId": "4a8a117d-1d66-4d99-ae70-be809973188b",
             "ITStaffID": "11111111-1111-1111-1111-111111111111",
-            "CompanyName": "شرکت  پرویزی",
-            "JobTitle": "کارمند",
-            "MobilePhone": "091212345678",
-            "Telephone": "091212345678",
-            "Email": "beigi@email.ir",
-            "WebSiteUrl": "www.beigi.ir",
-            "Address": "تهران تهران فلکه دوم صادقیه، ابتدای آیت الله کاشانی، خیابان بوستان یکم، پلاک 6، طبقه پنجم، واحد 17. 1471676833",
+            "CompanyName": "",
+            "JobTitle": "",
+            "MobilePhone": user.phone,
+            "Telephone": user.phone,
+            "Email": "",
+            "WebSiteUrl": "",
+            "Address": "",
             "Address_ProvinceId": "11111111-1111-1111-1111-111111111111",
             "Address_CityId": "11111111-1111-1111-1111-111111111111",
-            "Address_PostalCode": "1471676833",
-            "Address_Street": "فلکه دوم صادقیه، ابتدای آیت الله کاشانی، خیابان بوستان یکم، پلاک 6، طبقه پنجم، واحد 17",
+            "Address_PostalCode": "",
+            "Address_Street": "",
             "LeadSourceCode": "A93D0B8B-33FE-49FF-8015-FCAD0C781565",
             "StatusCode": None,
             "CampaignId": None,
@@ -47,8 +51,12 @@ def save_user_in_crm(sender, instance, **kwargs):
                    'Authorization': 'Bearer ' + token}
 
         response = requests.post('https://melkemun.danaabr.com/api/v1/CRM_Lead', json=post_data, headers=headers)
-        content = response.content
-        content2 = content
+        content = response.json()
+
+        row_id = content['ResultData']['rowId']
+
+        response2 = requests.put('https://melkemun.danaabr.com/api/V1/CRM_Lead/ConvertLead/' + row_id, headers=headers)
+        content2 = response2.content
 
     if instance.type_id == Payment.Type.ONLINE:
         post_data = {
