@@ -1,17 +1,19 @@
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-
-import dana.tasks
+from .celery import app
 from purchase.models import Payment
 import requests
 
 
-# noinspection PyUnusedLocal
-@receiver(post_save, sender=Payment)
-def save_user_in_crm(sender, instance, **kwargs):
-    send_to_crm(instance)
+@app.task
+def add(x, y):
+    return x + y
 
 
+@app.task
+def mul(x, y):
+    return x * y
+
+
+@app.task
 def send_to_crm(payment: Payment):
     user = payment.order.user
     login_url = 'https://melkemun.danaabr.com/api/v1/Token/GetToken'
@@ -105,3 +107,8 @@ def send_to_crm(payment: Payment):
         response = requests.post('https://melkemun.danaabr.com/api/v1/users/add/user', json=post_data, headers=headers)
         content = response.content
         content2 = content
+
+
+@app.task
+def xsum(numbers):
+    return sum(numbers)

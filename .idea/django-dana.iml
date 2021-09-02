@@ -5,5 +5,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="drf-purchase" />
+    <orderEntry type="module" module-name="drf-auther" />
   </component>
 </module>
