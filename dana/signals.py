@@ -5,7 +5,7 @@ import dana.tasks
 from purchase.models import Payment
 import requests
 
-from dana.settings import USERNAME, PASSWORD, SECRET
+from dana.settings import PASSWORD, USERNAME, SECRET
 
 
 # noinspection PyUnusedLocal
@@ -19,8 +19,7 @@ def send_to_crm(payment: Payment):
     login_url = 'https://melkemun.danaabr.com/api/v1/Token/GetToken'
     login_data = {'Username': USERNAME, 'Password': PASSWORD,
                   'secret': SECRET}
-    login_response = requests.post(login_url, json=login_data)1084CB040B8085C600174CD391C603F2B'}
-    login_response = requests.post(login_url, json=login_data
+    login_response = requests.post(login_url, json=login_data)
     login_content = login_response.json()
     token = login_content['ResultData']['access_token']
 
