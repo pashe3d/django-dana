@@ -6,5 +6,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="drf-purchase" />
     <orderEntry type="module" module-name="drf-auther" />
+    <orderEntry type="module" module-name="bon" />
   </component>
 </module>

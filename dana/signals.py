@@ -3,6 +3,7 @@ from django.dispatch import receiver
 
 import dana.tasks
 from purchase.models import Payment
+from bon.models import Person
 import requests
 
 from dana.settings import PASSWORD, USERNAME, SECRET
@@ -12,6 +13,12 @@ from dana.settings import PASSWORD, USERNAME, SECRET
 @receiver(post_save, sender=Payment)
 def save_user_in_crm(sender, instance, **kwargs):
     send_to_crm(instance)
+
+
+# noinspection PyUnusedLocal
+@receiver(post_save, sender=Person)
+def save_sub_user_in_crm(sender, instance, **kwargs):
+    send_sub_user_to_crm(instance)
 
 
 def send_to_crm(payment: Payment):
@@ -107,3 +114,57 @@ def send_to_crm(payment: Payment):
         response = requests.post('https://melkemun.danaabr.com/api/v1/users/add/user', json=post_data, headers=headers)
         content = response.content
         content2 = content
+
+
+def send_sub_user_to_crm(person: Person):
+    user = person
+    login_url = 'https://melkemun.danaabr.com/api/v1/Token/GetToken'
+    login_data = {'Username': USERNAME, 'Password': PASSWORD,
+                  'secret': SECRET}
+    login_response = requests.post(login_url, json=login_data)
+    login_content = login_response.json()
+    token = login_content['ResultData']['access_token']
+
+    if person.parent_id is not None:
+        post_data = {
+            "FirstName": "-",
+            "LastName": user.name,
+            "FullName": user.name,
+            "PersonalCode": "",
+            "Email": "",
+            "Tel": "",
+            "TelExt": "",
+            "MobilePhone": user.phone,
+            "Address": "",
+            "Description": "",
+            "PositionId": "",
+            "PS": "1234",
+            "RepPS": "1234",
+            "IPAddress": "",
+            "CheangePasswordAtNextLogin": False,
+            "CannotChangePassword": False,
+            "PasswordNeverExpires": False,
+            "DepartmentID": "22222222-2222-2222-2222-222222222222",
+            "DomainId": "00000000-0000-0000-0000-000000000000",
+            "UserType": 1,
+            "UN": user.phone,
+            "AvatarPath": "",
+            "IsActiveDirectory": False,
+            "IsLockedOut": False,
+            "IsActive": False,
+            "HasAccessToUserGroupRequests": False,
+            "HasAccessToCompanyRequests": False,
+            "HasAccessToDepartmentRequests": False,
+            "HasAccessToItsDepartmentAndSubDepartments": False,
+            "HasAccessToUserAssetDepartment": False,
+            "HasAccessToUserAssetCompany": False,
+            "EnableNotification": 7,
+            "SendInvitationEmail": False
+        }
+        headers = {'Content-Type': 'application/json',
+                   'Authorization': 'Bearer ' + token}
+
+        response = requests.post('https://melkemun.danaabr.com/api/v1/users/add/user', json=post_data, headers=headers)
+        content = response.content
+        content2 = content
+
