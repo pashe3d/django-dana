@@ -14,28 +14,34 @@ from purchase.models import Payment
 # noinspection PyUnusedLocal
 @receiver(post_save, sender=Payment)
 def save_user_in_crm(sender, instance, **kwargs):
-    send_to_crm(instance)
+    try:
+        send_to_crm(instance)
+    except:
+        print("Something else went wrong")
 
 
 # noinspection PyUnusedLocal
 @receiver(post_save, sender=Person)
 def save_sub_user_in_crm(sender, instance, **kwargs):
-    send_sub_user_to_crm(instance)
+    try:
+        send_sub_user_to_crm(instance)
+    except:
+        print("Something else went wrong")
 
 
 def send_to_crm(payment: Payment):
-    user = payment.order.user
-    login_url = 'https://melkemun.danaabr.com/api/v1/Token/GetToken'
-    login_data = {
-        'Username': USERNAME,
-        'Password': PASSWORD,
-        'secret': SECRET,
-    }
-    login_response = requests.post(login_url, json=login_data)
-    login_content = login_response.json()
-    token = login_content['ResultData']['access_token']
-
     if payment.type_id == Payment.Type.FREE:
+        user = payment.order.user
+        login_url = 'https://melkemun.danaabr.com/api/v1/Token/GetToken'
+        login_data = {
+            'Username': USERNAME,
+            'Password': PASSWORD,
+            'secret': SECRET,
+        }
+        login_response = requests.post(login_url, json=login_data)
+        login_content = login_response.json()
+        token = login_content['ResultData']['access_token']
+
         post_data = {
             'Subject': 'سرنخ: علاقه مند به خرید اشتراک',
             'FullName': user.name,
@@ -78,6 +84,17 @@ def send_to_crm(payment: Payment):
         requests.put(f'https://melkemun.danaabr.com/api/V1/CRM_Lead/ConvertLead/{row_id}', headers=headers)
 
     if payment.type_id == Payment.Type.ONLINE:
+        user = payment.order.user
+        login_url = 'https://melkemun.danaabr.com/api/v1/Token/GetToken'
+        login_data = {
+            'Username': USERNAME,
+            'Password': PASSWORD,
+            'secret': SECRET,
+        }
+        login_response = requests.post(login_url, json=login_data)
+        login_content = login_response.json()
+        token = login_content['ResultData']['access_token']
+
         post_data = {
             'FirstName': '-',
             'LastName': user.name,
@@ -122,15 +139,14 @@ def send_to_crm(payment: Payment):
 
 
 def send_sub_user_to_crm(person: Person):
-    user = person
-    login_url = 'https://melkemun.danaabr.com/api/v1/Token/GetToken'
-    login_data = {'Username': USERNAME, 'Password': PASSWORD,
-                  'secret': SECRET}
-    login_response = requests.post(login_url, json=login_data)
-    login_content = login_response.json()
-    token = login_content['ResultData']['access_token']
-
     if person.parent_id is not None:
+        user = person
+        login_url = 'https://melkemun.danaabr.com/api/v1/Token/GetToken'
+        login_data = {'Username': USERNAME, 'Password': PASSWORD,
+                      'secret': SECRET}
+        login_response = requests.post(login_url, json=login_data)
+        login_content = login_response.json()
+        token = login_content['ResultData']['access_token']
         post_data = {
             "FirstName": "-",
             "LastName": user.name,
@@ -172,4 +188,3 @@ def send_sub_user_to_crm(person: Person):
         response = requests.post('https://melkemun.danaabr.com/api/v1/users/add/user', json=post_data, headers=headers)
         content = response.content
         content2 = content
-
