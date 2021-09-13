@@ -135,7 +135,22 @@ def send_to_crm(payment: Payment):
             'Authorization': f'Bearer {token}',
         }
 
-        requests.post('https://melkemun.danaabr.com/api/v1/users/add/user', json=post_data, headers=headers)
+        response = requests.post('https://melkemun.danaabr.com/api/v1/users/add/user', json=post_data, headers=headers)
+
+        content = response.json()
+
+        row_id = content['ResultData']['rowId']
+        factor_data = {
+            'Title': 'فروش اشتراک',
+            'AccountId': row_id,
+            'iTStaffId': '11111111-1111-1111-1111-111111111111',
+            'Status': '2190E6EC-D127-48B1-953E-70CC8812E986',
+            'Purchaser': 'aaa',
+            'TemplateAttributeId': 'E5C52760-FAF6-4691-B681-073A125FB0FE',
+            'IsRemoved':'0'
+        }
+
+        requests.post(f'https://melkemun.danaabr.com/api/V1/WarehouseInvoice', json=factor_data, headers=headers)
 
 
 def send_sub_user_to_crm(person: Person):
