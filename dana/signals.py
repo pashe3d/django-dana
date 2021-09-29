@@ -2,11 +2,8 @@ import requests
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-import dana.tasks
-from purchase.models import Payment
 from bon.models import Person
-import requests
-
+from dana import tasks
 from dana.settings import PASSWORD, USERNAME, SECRET
 from purchase.models import Payment
 
@@ -15,7 +12,8 @@ from purchase.models import Payment
 @receiver(post_save, sender=Payment)
 def save_user_in_crm(sender, instance, **kwargs):
     try:
-        send_to_crm(instance)
+        tasks.send_to_crm.delay(instance)
+        # send_to_crm(instance)
     except:
         print("Something else went wrong")
 
@@ -24,7 +22,8 @@ def save_user_in_crm(sender, instance, **kwargs):
 @receiver(post_save, sender=Person)
 def save_sub_user_in_crm(sender, instance, **kwargs):
     try:
-        send_sub_user_to_crm(instance)
+        tasks.send_sub_user_to_crm.delay(instance)
+        # send_sub_user_to_crm(instance)
     except:
         print("Something else went wrong")
 
@@ -147,7 +146,7 @@ def send_to_crm(payment: Payment):
             'Status': '2190E6EC-D127-48B1-953E-70CC8812E986',
             'Purchaser': 'aaa',
             'TemplateAttributeId': 'E5C52760-FAF6-4691-B681-073A125FB0FE',
-            'IsRemoved':'0'
+            'IsRemoved': '0'
         }
 
         requests.post(f'https://melkemun.danaabr.com/api/V1/WarehouseInvoice', json=factor_data, headers=headers)
